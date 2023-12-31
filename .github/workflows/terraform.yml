@@ -1,0 +1,107 @@
+name: Terraform GKE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  terraform:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    env:
+      GCP_REGION: europe-west1
+      GKE_CLUSTER_NAME: gke-dlgkedmo-dev
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_INDENTITY_PROVIDER }}' 
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      # install gcloud sdk to run kubectl and helm commands ..
+
+      - name: 'Setup cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+
+
+      - name: Configure kubectl
+        run: |
+          gcloud container clusters get-credentials $GKE_CLUSTER_NAME --region $GCP_REGION
+          gcloud components install gke-gcloud-auth-plugin
+
+          
+      - name: Install Helm
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+
+      - name: Install NGINX Ingress Controller
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+          nsingress="ingress-nginx"
+          if ! kubectl get namespace "${nsingress}" &> /dev/null; then
+            kubectl create namespace "${nsingress}"
+          else
+            echo "Namespace '${nsingress}' already exists."
+          fi
+
+          # uncomment below line to install ingress
+          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx
+
+          # Delay for 90 Seconds to make sure the ingress controller is up and running
+          sleep 90
+
+      - name: Deploy K8 Namespace and Services 
+        run: |
+
+          nsmonitoring="monitoring"
+          if ! kubectl get namespace "${nsmonitoring}" &> /dev/null; then
+            kubectl create namespace "${nsmonitoring}"
+          else
+            echo "Namespace '${nsmonitoring}' already exists."
+          fi
+
+
+          nsservices="services"
+          if ! kubectl get namespace "${nsservices}" &> /dev/null; then
+            kubectl create namespace "${nsservices}"
+          else
+            echo "Namespace '${nsservices}' already exists."
+          fi
+          # Running helm charts
+
+          helm upgrade --install websitesecret ./helm-charts/websitesecret
+
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+          # install prometheus
+          helm upgrade -install prometheus prometheus-community/prometheus --namespace monitoring
+
+          # install grafana
+          helm upgrade -install grafana grafana/grafana --namespace monitoring
+
+          # install grafan ingress
+          kubectl apply -f ./k8-files/grafana-ingress.yaml
+          
+          # get grafana admin password - initial
+          echo "Grafana server url is http://newgrafana.dlgkedemo.com and ip address is "
+          kubectl get services -n ingress-nginx ingress-nginx-controller -o=jsonpath='{.status.loadBalancer.ingress[0].ip}'
+          echo "Grafana server initial password is    "
+          kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+          echo "Promtheus server url to be added as provider in grafana dashboard http://prometheus-server.monitoring.svc.cluster.local , import 6417 number dashboard for kubenetes cluster details"
+

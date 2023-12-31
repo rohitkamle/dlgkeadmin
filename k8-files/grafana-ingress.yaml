@@ -1,0 +1,24 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - newgrafana.dlgkedemo.com
+    secretName: websitesecret
+  rules:
+  - host: newgrafana.dlgkedemo.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 80
