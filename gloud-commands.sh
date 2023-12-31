@@ -13,6 +13,12 @@ gcloud iam workload-identity-pools providers create-oidc $WIF_PROVIDER_NAME --pr
 gcloud iam service-accounts create $SA_NAME --description="Service account for GCP Admin deployment" --display-name="$SA_DISPLAY_NAME"
 
 gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/container.admin"
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/iam.serviceAccountTokenCreator"
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/iam.serviceAccountUser"
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/iam.serviceAccountAdmin"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$WIF_POOL_NAME/*" --role="roles/iam.workloadIdentityUser"
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
 
 GCP_WORKLOAD_IDENTITY_PROVIDER=$(gcloud iam workload-identity-pools providers describe $WIF_PROVIDER_NAME --project $PROJECT_ID --location="global" --workload-identity-pool=$WIF_POOL_NAME --format="value(name)" )
 
@@ -26,3 +32,16 @@ GCP_SERVICE_ACCOUNT=$(gcloud iam service-accounts describe $SA_NAME@$PROJECT_ID.
 echo "GCP_WORKLOAD_INDENTITY_PROVIDER = $GCP_WORKLOAD_INDENTITY_PROVIDER"
 echo "GCP_SERVICE_ACCOUNT = $GCP_SERVICE_ACCOUNT"
 
+gcloud projects add-iam-policy-binding fabled-era-408608 --member="serviceAccount:dlgkedemosatf@fabled-era-408608.iam.gserviceaccount.com" --role="roles/iam.serviceAccountAdmin"
+gcloud projects add-iam-policy-binding fabled-era-408608 --member="serviceAccount:dlgkedemosatf@fabled-era-408608.iam.gserviceaccount.com" --role="roles/iam.serviceAccountAdmin"
+
+
+gcloud projects add-iam-policy-binding fabled-era-408608 --member="serviceAccount:dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com" --role="roles/iam.serviceAccountAdmin"
+gcloud projects add-iam-policy-binding fabled-era-408608 --member="serviceAccount:dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com" --role="roles/iam.serviceAccountTokenCreator"
+
+gcloud iam service-accounts add-iam-policy-binding dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com --member="serviceAccount:dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com" --role=roles/iam.serviceAccountTokenCreator
+
+
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/iam.serviceAccountAdmin"
+
+gcloud iam service-accounts add-iam-policy-binding dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com --member=serviceAccount:dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com --role=roles/iam.workloadIdentityUser
