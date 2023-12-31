@@ -25,7 +25,7 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           token_format: 'access_token'
-          workload_identity_provider: 'https://iam.googleapis.com/projects/231248354455/locations/global/workloadIdentityPools/dlwifpoolgkeadmin/providers/dlwifprovidergkeadmin' 
+          workload_identity_provider: 'projects/231248354455/locations/global/workloadIdentityPools/dlwifpoolgkeadmin/providers/dlwifprovidergkeadmin' 
           service_account: 'dlgkedemosagkadmin@fabled-era-408608.iam.gserviceaccount.com'
 
       # install gcloud sdk to run kubectl and helm commands ..
