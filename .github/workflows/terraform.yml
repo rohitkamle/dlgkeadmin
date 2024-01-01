@@ -73,13 +73,6 @@ jobs:
             echo "Namespace '${nsmonitoring}' already exists."
           fi
 
-
-          nsservices="services"
-          if ! kubectl get namespace "${nsservices}" &> /dev/null; then
-            kubectl create namespace "${nsservices}"
-          else
-            echo "Namespace '${nsservices}' already exists."
-          fi
           # Running helm charts
 
           helm upgrade --install websitesecret ./helm-charts/websitesecret
