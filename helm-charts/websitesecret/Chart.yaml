@@ -1,0 +1,4 @@
+apiVersion: v2
+name: website-secret
+description: A Helm chart for ebsite-secret deployment
+version: 0.1.0
