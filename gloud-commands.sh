@@ -19,8 +19,9 @@ echo $GITHUB_REPO
 # CREATE SERVICE ACCOUNT
 gcloud iam service-accounts create $SA_NAME --description="Service account for Terraform GCP deployment" --display-name="$SA_DISPLAY_NAME"
 
-# ASSIGN PERSMISSIONS TO SERVICE ACCOUNT
-gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/container.admin"
+# ASSIGN PERSMISSIONS TO SERVICE ACCOUNT container.clusterAdmin
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/container.clusterAdmin"
+gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/iam.serviceAccountUser"
 
 # CREATED MANAGED IDENTITY POOL AND PROVIDER
 gcloud iam workload-identity-pools create $WIF_POOL_NAME --project $PROJECT_ID --location "global" --display-name "$WIF_POOL_DISPLAY_NAME"
